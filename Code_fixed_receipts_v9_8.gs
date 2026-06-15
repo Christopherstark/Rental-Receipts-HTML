@@ -647,7 +647,7 @@ function buildReceiptHtml(d, pageOnly) {
 
     '<div class="footer">' +
     '<div class="footer-line" style="align-items:flex-start;"><div class="footer-support-icon" style="margin-top:1px;">' + iHeadset + '</div><span>We appreciate your on-time payment. If you have any questions, please contact us.</span></div>' +
-    '<div class="footer-line footer-links"><span class="footer-link">' + iPhone + ' (909) 555-0100</span><span class="footer-link">' + iEmail + ' info@gallarzollc.com</span></div>' +
+    '<div class="footer-line footer-links"><span class="footer-link">' + iPhone + ' (951) 453-1632</span><span class="footer-link">' + iEmail + ' gallarzollc@gmail.com</span></div>' +
     '</div>' +
     '</div>' +
     '</div>';

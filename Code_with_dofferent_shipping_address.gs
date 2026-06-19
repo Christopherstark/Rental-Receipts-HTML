@@ -22,8 +22,9 @@ var SKIP_SHEETS = [
 //          splits cleanly into two lines on the receipt.
 //          Example: "456 Oak Ave, Riverside CA 92501"
 //
-//  This REPLACES the unit address in the "Rent Amount" row for that
-//  tenant only. To add more tenants later, add another line. Leave the
+//  This changes ONLY the mailing/shipping address in the recipient block at
+//  the top of the receipt. The "Rent Amount" row still shows the actual unit
+//  being rented. To add more tenants later, add another line. Leave the
 //  object empty ({}) to turn the feature off entirely.
 // ============================================================
 var TENANT_ADDRESS_OVERRIDES = {
@@ -219,12 +220,15 @@ function initQueue(mode, selectedMonth, selectedTenant) {
       var nextMonthKeys = Object.keys(MONTH_ORDER).filter(function(k){ return MONTH_ORDER[k] === nextMonthNum; });
       var nextMonthName = nextMonthKeys.length ? nextMonthKeys[0] : "Next";
 
-      // Use a per-tenant override address if one is defined, otherwise
-      // fall back to the unit address read from this sheet's header.
-      var receiptAddress = getAddressOverride(tenant) || address;
+      // The unit address (read from this sheet's header) is the property
+      // actually being rented — it always appears in the "Rent Amount" row.
+      // A per-tenant override only changes the mailing/shipping address shown
+      // in the recipient block at the top of the receipt.
+      var mailingAddress = getAddressOverride(tenant) || address;
 
       queue.push({
-        propertyAddress: receiptAddress,
+        propertyAddress: address,
+        mailingAddress:  mailingAddress,
         sheetName:       sheetName,
         tenantName:      tenant,
         paymentDate:     fmtDate(payDate),
@@ -556,6 +560,13 @@ function buildReceiptHtml(d, pageOnly) {
   var addr1 = lc !== -1 ? d.propertyAddress.substring(0, lc).trim() : d.propertyAddress.trim();
   var addr2 = lc !== -1 ? d.propertyAddress.substring(lc + 1).trim() : "";
 
+  // Mailing/shipping address for the top recipient block. Falls back to the
+  // unit address when no override is set, so non-override tenants are unchanged.
+  var mAddr  = d.mailingAddress || d.propertyAddress;
+  var mlc    = mAddr.lastIndexOf(",");
+  var maddr1 = mlc !== -1 ? mAddr.substring(0, mlc).trim() : mAddr.trim();
+  var maddr2 = mlc !== -1 ? mAddr.substring(mlc + 1).trim() : "";
+
   var leasePeriod  = d.rentalMonth + " 1, " + d.rentalYear + " - " + d.rentalMonth + " " + lastDayOfMonth(d.rentalMonth, d.rentalYear) + ", " + d.rentalYear;
   var notes        = d.isLate ? "Late payment recorded for this month." : "Thank you for your on-time payment!";
 
@@ -631,7 +642,7 @@ function buildReceiptHtml(d, pageOnly) {
 
     '<div class="recipient-block">' +
     '<strong style="' + tenantNameStyle + '">' + escHtml(d.tenantName) + '</strong>' +
-    escHtml(addr1) + '<br>' + escHtml(addr2) +
+    escHtml(maddr1) + '<br>' + escHtml(maddr2) +
     '</div>' +
 
     '<div class="header-right-meta">' +
